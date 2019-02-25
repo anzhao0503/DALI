@@ -65,7 +65,7 @@ Example:
     .AddOptionalArg("stride",
                     R"code(Distance between consecutive frames in sequence)code", 1, false)
     .AddOptionalArg("pad_sequence",
-                    R"code(The sequence can be padded if the arg is true)code", true)
+                    R"code(The sequence can be padded if the arg is true)code", false)
     .AddOptionalArg("image_type",
                     R"code(The color space of input and output image)code", DALI_RGB, false)
     .AddParent("LoaderBase");
