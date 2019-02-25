@@ -72,24 +72,53 @@ namespace detail {
 
 std::vector<std::vector<std::string>> GenerateSequences(
     const std::vector<filesystem::Stream> &streams, size_t sequence_length, size_t step,
-    size_t stride) {
+    size_t stride, bool pad_sequence) {
   std::vector<std::vector<std::string>> sequences;
   for (const auto &s : streams) {
+    std::vector<size_t> seq_indexes;
+    if (sequence_length * stride >= seq_indexes.size()) {
+      if (!pad_sequence) {
+        continue;
+      } else {
+        PaddingSequence(seq_indexes, s.second.size(), sequence_length * stride);
+      }
+    } else {
+      for (size_t i = 0; i < s.second.size(); i++) {
+        seq_indexes.push_back(i);
+      }
+    }
     for (size_t i = 0; i < s.second.size(); i += step) {
       std::vector<std::string> sequence;
       sequence.reserve(sequence_length);
       // this sequence won't fit
-      if (i + (sequence_length - 1) * stride >= s.second.size()) {
+      if (i + (sequence_length - 1) * stride >= seq_indexes.size()) {
         break;
       }
       // fill the sequence
       for (size_t seq_elem = 0; seq_elem < sequence_length; seq_elem++) {
-        sequence.push_back(s.second[i + seq_elem * stride]);
+        sequence.push_back(s.second[seq_indexes[i + seq_elem * stride]]);
       }
       sequences.push_back((sequence));
     }
   }
   return sequences;
+}
+
+void PaddingSequence(std::vector<size_t> &seq_indexes, size_t seq_len, size_t num_output) {
+  size_t num_repeat = num_output / seq_len;
+  size_t remainder = num_output % seq_len;
+  for (size_t i = 0; i < seq_len; i++) {
+    seq_indexes.push_back(i);
+  }
+  if (remainder > 0) {
+    size_t step = seq_len / remainder;
+    for (size_t i = step / 2; i < seq_len; i += step) {
+      for (size_t j = 0; j < num_repeat; j++) {
+        seq_indexes.push_back(i);
+      }
+    }
+  }
+  sort(seq_indexes.begin(), seq_indexes.end());
 }
 
 }  // namespace detail

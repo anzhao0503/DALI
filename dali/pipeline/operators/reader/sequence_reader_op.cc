@@ -34,7 +34,7 @@ DALI_SCHEMA(SequenceReader)
 Expects file_root to contain set of directories, each of them represents one extracted video
 stream. Extracted video stream is represented by one file for each frame, sorting the paths to
 frames lexicographically should give the original order of frames.
-Sequences do not cross stream boundary and only full sequences are considered - there is no padding.
+Sequences do not cross stream boundary and support padding.
 Example:
 > file_root
   > 0
@@ -64,6 +64,8 @@ Example:
                     R"code(Distance between first frames of consecutive sequences)code", 1, false)
     .AddOptionalArg("stride",
                     R"code(Distance between consecutive frames in sequence)code", 1, false)
+    .AddOptionalArg("pad_sequence",
+                    R"code(The sequence can be padded if the arg is true)code", true)
     .AddOptionalArg("image_type",
                     R"code(The color space of input and output image)code", DALI_RGB, false)
     .AddParent("LoaderBase");

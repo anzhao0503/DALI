@@ -70,7 +70,8 @@ namespace detail {
  */
 std::vector<std::vector<std::string>> DLL_PUBLIC
 GenerateSequences(const std::vector<filesystem::Stream> &streams, size_t sequence_length,
-                  size_t step, size_t stride);
+                  size_t step, size_t stride, bool pad_sequence);
+void PaddingSequence(std::vector<size_t> &seq_indexes, size_t seq_len, size_t num_output);
 }  // namespace detail
 
 struct TensorSequence {
@@ -91,8 +92,9 @@ class SequenceLoader : public Loader<CPUBackend, TensorSequence> {
         sequence_length_(spec.GetArgument<int32_t>("sequence_length")),
         step_(spec.GetArgument<int32_t>("step")),
         stride_(spec.GetArgument<int32_t>("stride")),
+        pad_sequence_(spec.GetArgument<bool>("pad_sequence")),
         streams_(filesystem::GatherExtractedStreams(file_root_)),
-        sequences_(detail::GenerateSequences(streams_, sequence_length_, step_, stride_)),
+        sequences_(detail::GenerateSequences(streams_, sequence_length_, step_, stride_, pad_sequence_)),
         total_size_(sequences_.size()) {
     DALI_ENFORCE(sequence_length_ > 0, "Sequence length must be positive");
     DALI_ENFORCE(step_ > 0, "Step must be positive");
@@ -125,6 +127,7 @@ class SequenceLoader : public Loader<CPUBackend, TensorSequence> {
   int32_t sequence_length_;
   int32_t step_;
   int32_t stride_;
+  bool pad_sequence_;
   std::vector<filesystem::Stream> streams_;
   std::vector<std::vector<std::string>> sequences_;
   Index total_size_;
